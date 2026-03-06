@@ -1,35 +1,49 @@
-import { NextResponse } from "next/server"
-import path from "path"
-import { promises as fs } from "fs"
+"use client"
 
-const filePath = path.join(process.cwd(), "data", "wishlist.json")
+import { useEffect, useState } from "react"
 
-async function readJSON() {
-  try {
-    const data = await fs.readFile(filePath, "utf-8")
+export default function WishlistPage() {
+  const [items, setItems] = useState<any[]>([])
 
-    if (!data || data.trim() === "") return []
-
-    return JSON.parse(data)
-
-  } catch {
-    return []
+  async function loadItems() {
+    const res = await fetch("/api/wishlist")
+    const data = await res.json()
+    setItems(data)
   }
-}
 
-export async function GET() {
-  const items = await readJSON()
-  return NextResponse.json(items)
-}
+  async function toggleComplete(id: string) {
+    await fetch(`/api/wishlist/${id}`, {
+      method: "PATCH"
+    })
 
-export async function POST(req: Request) {
-  const newItem = await req.json()
+    loadItems()
+  }
 
-  const items = await readJSON()
+  useEffect(() => {
+    loadItems()
+  }, [])
 
-  items.push(newItem)
+  return (
+    <div>
+      <h1>Wishlist</h1>
 
-  await fs.writeFile(filePath, JSON.stringify(items, null, 2))
+      <ul>
+        {items.map(item => (
+          <li key={item.id}>
+            <span
+              style={{
+                textDecoration: item.completed ? "line-through" : "none"
+              }}
+            >
+              {item.title}
+            </span>
 
-  return NextResponse.json({ success: true })
+            <button onClick={() => toggleComplete(item.id)}>
+              {item.completed ? "Undo" : "Complete"}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
 }

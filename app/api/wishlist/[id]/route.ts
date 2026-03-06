@@ -14,25 +14,23 @@ async function readJSON() {
   }
 }
 
-export async function GET() {
-  const items = await readJSON()
-  return NextResponse.json(items)
-}
-
-export async function POST(req: Request) {
-  const body = await req.json()
-
-  const newItem = {
-    id: Date.now().toString(),
-    title: body.title,
-    completed: false
-  }
-
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const items = await readJSON()
 
-  items.push(newItem)
+  const updated = items.map((item: any) => {
+    if (item.id === params.id) {
+      return {
+        ...item,
+        completed: !item.completed
+      }
+    }
+    return item
+  })
 
-  await fs.writeFile(filePath, JSON.stringify(items, null, 2))
+  await fs.writeFile(filePath, JSON.stringify(updated, null, 2))
 
-  return NextResponse.json(newItem)
+  return NextResponse.json({ success: true })
 }
