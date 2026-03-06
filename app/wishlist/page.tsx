@@ -28,8 +28,15 @@ export default function WishlistPage() {
       <h1>Wishlist</h1>
 
       <ul>
-        {items.map(item => (
-          <li key={item.id}>
+        {items.map((item) => (
+          <li key={item.id} style={{ display: "flex", gap: "10px" }}>
+            
+            <input
+              type="checkbox"
+              checked={item.completed}
+              onChange={() => toggleComplete(item.id)}
+            />
+
             <span
               style={{
                 textDecoration: item.completed ? "line-through" : "none"
@@ -38,9 +45,6 @@ export default function WishlistPage() {
               {item.title}
             </span>
 
-            <button onClick={() => toggleComplete(item.id)}>
-              {item.completed ? "Undo" : "Complete"}
-            </button>
           </li>
         ))}
       </ul>

@@ -7,7 +7,9 @@ const filePath = path.join(process.cwd(), "data", "wishlist.json")
 async function readJSON() {
   try {
     const data = await fs.readFile(filePath, "utf-8")
+
     if (!data || data.trim() === "") return []
+
     return JSON.parse(data)
   } catch {
     return []
@@ -16,12 +18,14 @@ async function readJSON() {
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params   // ⭐ important
+
   const items = await readJSON()
 
   const updated = items.map((item: any) => {
-    if (item.id === params.id) {
+    if (item.id === id) {
       return {
         ...item,
         completed: !item.completed
