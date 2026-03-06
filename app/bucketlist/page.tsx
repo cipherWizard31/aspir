@@ -1,25 +1,53 @@
-async function getBucketlist() {
-    const res = await fetch("http://localhost:3000/api/bucketlist", {
-      cache: "no-store"
+"use client"
+
+import { useEffect, useState } from "react"
+
+export default function BucketlistPage() {
+  const [items, setItems] = useState<any[]>([])
+
+  async function loadItems() {
+    const res = await fetch("/api/bucketlist")
+    const data = await res.json()
+    setItems(data)
+  }
+
+  async function toggleComplete(id: string) {
+    await fetch(`/api/bucketlist/${id}`, {
+      method: "PATCH"
     })
-  
-    return res.json()
+
+    loadItems()
   }
-  
-  export default async function BucketlistPage() {
-    const items = await getBucketlist()
-  
-    return (
-      <div>
-        <h1>Bucket List</h1>
-  
-        <ul>
-          {items.map((item: any, index: number) => (
-            <li key={index}>
+
+  useEffect(() => {
+    loadItems()
+  }, [])
+
+  return (
+    <div>
+      <h1>Bucket List</h1>
+
+      <ul>
+        {items.map((item) => (
+          <li key={item.id} style={{ display: "flex", gap: "10px" }}>
+            
+            <input
+              type="checkbox"
+              checked={item.completed}
+              onChange={() => toggleComplete(item.id)}
+            />
+
+            <span
+              style={{
+                textDecoration: item.completed ? "line-through" : "none"
+              }}
+            >
               {item.title}
-            </li>
-          ))}
-        </ul>
-      </div>
-    )
-  }
+            </span>
+
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
